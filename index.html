@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Phishing Email Analyzer — IBM BharatCares</title>
+  <link rel="stylesheet" href="static/css/style.css" />
+</head>
+<body>
+
+<!-- ═══════════════════════════  HEADER  ═══════════════════════════ -->
+<header class="site-header">
+  <div class="header-inner">
+    <div class="brand">
+      <span class="brand-icon">🛡</span>
+      <div>
+        <span class="brand-title">Phishing Email Analyzer</span>
+        <span class="brand-sub">IBM BharatCares — Cybersecurity Project</span>
+      </div>
+    </div>
+    <span class="prototype-badge" title="Rule-based prototype — not a trained AI model">Prototype v1.0</span>
+  </div>
+</header>
+
+<!-- ═══════════════════════════  MAIN  ═══════════════════════════ -->
+<main class="main-grid">
+
+  <!-- ── LEFT COLUMN: INPUT ───────────────────────────────────────── -->
+  <section class="panel input-panel" aria-label="Email input">
+    <div class="panel-header">
+      <h2>📧 Email Input</h2>
+      <div class="input-actions">
+        <button id="btn-demo" class="btn btn-ghost" title="Load a fictional demo phishing email">Load Demo</button>
+        <button id="btn-clear" class="btn btn-ghost" title="Clear all input fields">Clear</button>
+      </div>
+    </div>
+
+    <label class="field-label" for="input-email">
+      Paste the full email (headers + body)
+      <span class="tooltip" title="Include everything: From, To, Subject lines, any Received / Authentication-Results headers, and the full message body.">ⓘ</span>
+    </label>
+    <textarea id="input-email" class="field-textarea" rows="18"
+      placeholder="Paste the complete email here — headers, subject, and body. Example:&#10;From: PayPal Support &lt;support@paypa1.com&gt;&#10;To: you@example.com&#10;Subject: URGENT: Your account has been suspended&#10;..."></textarea>
+
+    <label class="field-label" for="input-attachments" style="margin-top:12px;">
+      Attachment filenames (optional, one per line)
+      <span class="tooltip" title="Type or paste the names of any attached files. The app checks extensions only — no file is opened or executed.">ⓘ</span>
+    </label>
+    <textarea id="input-attachments" class="field-textarea" rows="3"
+      placeholder="invoice.exe&#10;document.docm&#10;photo.jpg"></textarea>
+
+    <div class="btn-row" style="margin-top:16px;">
+      <button id="btn-analyze" class="btn btn-primary">🔍 Analyze Email</button>
+    </div>
+
+    <p class="disclaimer">
+      ⚠ This tool performs <strong>local, rule-based analysis only</strong>. Results are
+      indicative and <strong>should be verified by a qualified security professional</strong>.
+      No email content is sent to any external server. Identified indicators are not
+      automatically confirmed as malicious.
+    </p>
+  </section>
+
+  <!-- ── RIGHT COLUMN: RESULTS ────────────────────────────────────── -->
+  <section class="panel results-panel" aria-label="Analysis results" id="results-panel">
+
+    <!-- Empty state -->
+    <div class="empty-state" id="empty-state">
+      <div class="empty-icon">🔎</div>
+      <p>Paste an email on the left and click <strong>Analyze Email</strong> to see the results here.</p>
+      <p class="muted">No data is sent anywhere — all analysis runs in your browser.</p>
+    </div>
+
+    <!-- Results (hidden until analysis runs) -->
+    <div id="results-content" class="hidden">
+
+      <!-- ── Summary Cards ── -->
+      <div class="summary-cards">
+        <div class="card card-score" id="card-score">
+          <div class="card-label">Risk Score</div>
+          <div class="score-value" id="score-value">—</div>
+          <div class="score-bar-track"><div class="score-bar-fill" id="score-bar"></div></div>
+          <div class="score-level" id="score-level">—</div>
+        </div>
+        <div class="card" id="card-sender">
+          <div class="card-label">Sender Analysis</div>
+          <div class="card-stat" id="stat-sender">—</div>
+          <div class="card-detail" id="detail-sender"></div>
+        </div>
+        <div class="card" id="card-links">
+          <div class="card-label">Suspicious Links</div>
+          <div class="card-stat" id="stat-links">—</div>
+          <div class="card-detail" id="detail-links"></div>
+        </div>
+        <div class="card" id="card-attach">
+          <div class="card-label">Attachments</div>
+          <div class="card-stat" id="stat-attach">—</div>
+          <div class="card-detail" id="detail-attach"></div>
+        </div>
+        <div class="card" id="card-ioc">
+          <div class="card-label">IOCs Extracted</div>
+          <div class="card-stat" id="stat-ioc">—</div>
+          <div class="card-detail" id="detail-ioc"></div>
+        </div>
+      </div>
+
+      <!-- ── Findings ── -->
+      <div class="section-block">
+        <h3 class="section-title">📋 Findings &amp; Score Breakdown</h3>
+        <div id="findings-list"></div>
+      </div>
+
+      <!-- ── Sender Detail ── -->
+      <div class="section-block">
+        <h3 class="section-title">👤 Sender &amp; Authentication Details</h3>
+        <div id="sender-detail-block"></div>
+      </div>
+
+      <!-- ── Links ── -->
+      <div class="section-block">
+        <h3 class="section-title">🔗 Extracted Links</h3>
+        <div id="links-block"></div>
+      </div>
+
+      <!-- ── Attachments ── -->
+      <div class="section-block">
+        <h3 class="section-title">📎 Attachment Analysis</h3>
+        <div id="attachments-block"></div>
+      </div>
+
+      <!-- ── IOCs ── -->
+      <div class="section-block">
+        <h3 class="section-title">🗂 Extracted Indicators of Compromise (IOCs)</h3>
+        <div class="ioc-header-row">
+          <span class="muted" style="font-size:13px;">Unique values extracted from the email text.</span>
+          <button id="btn-copy-ioc" class="btn btn-ghost btn-sm">📋 Copy IOCs</button>
+        </div>
+        <div id="ioc-block"></div>
+      </div>
+
+    </div><!-- /results-content -->
+  </section>
+
+</main>
+
+<footer class="site-footer">
+  <span>IBM BharatCares Cybersecurity Project · Phishing Email Analyzer · Rule-based prototype · Results are not definitive</span>
+</footer>
+
+<script src="static/js/rules.js"></script>
+<script src="static/js/analyzer.js"></script>
+<script src="static/js/app.js"></script>
+</body>
+</html>
